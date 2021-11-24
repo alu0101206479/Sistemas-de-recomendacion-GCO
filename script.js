@@ -16,8 +16,7 @@ fichero.addEventListener('change', function(e) {
 
   function simple(matriz, u, item, n_vecinos, similitudes) {
     if (n_vecinos < 3) {
-      console.error("ERROR: EL número elegido de vecinos es demasiado pequeño para validar")
-        console.log("Minimo 3 vecinos")
+      alert("ERROR: EL número elegido de vecinos es demasiado pequeño para obtener predicciones con 'Predicción simple'");
     } else {
       let numerador = 0;
       let denominador = 0;       
@@ -159,6 +158,7 @@ fichero.addEventListener('change', function(e) {
 
   function completar_matriz(matriz, metrica, n_vecinos, tipo_pred) {
     let matriz_salida = matriz.slice();
+    let vecinos_seleccionados = [];
 
     for (let i = 0; i < matriz_salida.length; i++) {
       for (let j = 0; j < matriz_salida[i].length; j++) {
@@ -167,16 +167,16 @@ fichero.addEventListener('change', function(e) {
           let similitud = [];
     
           switch (metrica) {
-            case "pearson":
+            case "Correlación de Pearson":
               for (let k = 1; k < matriz_salida.length; k++) {
                 similitud.push([(k+i)%matriz_salida.length, pearson(matriz_salida, i, (k+i)%matriz_salida.length)])
               }
               break
-            case "coseno":
+            case "Distancia coseno":
               for (let k = 1; k < matriz_salida.length; k++) {
                 similitud.push([(k+i)%matriz_salida.length, coseno(matriz_salida, i, (k+i)%matriz_salida.length)])            }
               break
-            case "euclidea":
+            case "Distancia Euclídea":
               for (let k = 1; k < matriz_salida.length; k++) {
                 similitud.push([(k+i)%matriz_salida.length, euclidea(matriz_salida, i, (k+i)%matriz_salida.length)])
               }
@@ -199,13 +199,21 @@ fichero.addEventListener('change', function(e) {
               }
           });
 
+          let aux = [[i, j], []]
           switch (tipo_pred) {
-            case "simple":
+            case "Predicción simple":
+              
+              for (let k = 0; k < n_vecinos; k++) {
+                aux[1].push(similitud[k][0]);
+              }
               matriz_salida[i][j] = simple(matriz_salida, i, j, n_vecinos, similitud)
     
               break
-            case "medida":
-             matriz_salida[i][j] = medida(matriz_salida, i, j, n_vecinos, similitud)
+            case "Diferencia con la medida":
+              for (let k = 0; k < n_vecinos; k++) {
+                aux[1].push(similitud[k][0]);
+              }
+              matriz_salida[i][j] = medida(matriz_salida, i, j, n_vecinos, similitud)
 
               break
             case "default":
@@ -213,11 +221,13 @@ fichero.addEventListener('change', function(e) {
                 console.log("Metricas validas = [pearson, coseno, euclidea]")
               break
           }
-
-          return matriz_salida;
+          
+          vecinos_seleccionados.push(aux);
         }
       }
     }
+    
+    return [matriz_salida, vecinos_seleccionados];
   }
 
   function recoger_informacion() {
@@ -230,7 +240,37 @@ fichero.addEventListener('change', function(e) {
         tipo_prediccion = document.getElementById("tipo_prediccion").value
 
         let salida = "<b>Matriz completa</b><br>"
-        document.getElementById("salida").innerHTML = completar_matriz(matriz_entrada, metrica, numero_vecinos, tipo_prediccion)
+        let salida_syr = completar_matriz(matriz_entrada, metrica, numero_vecinos, tipo_prediccion)
+      console.log(salida_syr)
+        for (let i = 0; i < salida_syr[0].length; i++) {
+          for (let j = 0; j < salida_syr[0][i].length; j++) {
+            if (j > 0) {
+              salida = salida + " " + salida_syr[0][i][j]
+            } else {
+              salida = salida + salida_syr[0][i][j];
+            }
+          }
+          salida = salida + "<br>"
+        }
+
+        salida = salida + "<br><br><b>Vecinos seleccionados en el proceso de predicción</b><br>"
+console.log(salida_syr[1][0])
+        for (let i = 0; i < salida_syr[1].length; i++) {
+          salida = salida + "· Predicción de la calificación (Usuario  " + (parseInt(salida_syr[1][i][0][0])+1) + ", Item " + (parseInt(salida_syr[1][i][0][1])+1) + ")<br>Usuarios de las líneas "
+          for (let j = 0; j < salida_syr[1][i][1].length; j++) {
+            if (j > 0) {
+              if (j = salida_syr[1][i][1].length-1) {
+                salida = salida + " y " + (parseInt(salida_syr[1][i][1][j])+1)
+              } else {
+                  salida = salida + ", " + (parseInt(salida_syr[1][i][1][j])+1)
+              }
+              
+            } else {
+              salida = salida + (parseInt(salida_syr[1][i][1][j])+1)
+            }
+          }
+        }
+        document.getElementById("salida").innerHTML = salida
     }
 
 
