@@ -2,6 +2,7 @@ var fichero = document.getElementById('fichero')
 var matriz_entrada = []
 
 fichero.addEventListener('change', function(e) {
+  matriz_entrada = []
   let reader = new FileReader();
   reader.onload = function () {
     let lines = reader.result.toString()
@@ -14,7 +15,28 @@ fichero.addEventListener('change', function(e) {
   reader.readAsText(fichero.files[0]);
 }, false)
 
+  function calculo_medias(matriz, i) {
+    let medias = []
+    
 
+    for (let i = 0; i < matriz.length; i++) {
+      let contador = 0;
+      let sumatorio = 0;
+
+      for (let j = 0; j < matriz[i].length; j++) {
+        if (matriz[i][j] !== "-") {
+          sumatorio = sumatorio + parseInt(matriz[i][j]);
+          contador++;
+        }
+      }
+
+      medias.push(sumatorio/contador);
+
+      
+    }
+    
+    return medias;
+  }
 
   function simple(matriz, item, n_vecinos, similitudes) {
     if (n_vecinos < 3) {
@@ -25,16 +47,9 @@ fichero.addEventListener('change', function(e) {
         let denominador = 0;    
         // let vecino = 0;   
         for (let k = 0; k < n_vecinos; k++) {
-          // FALTA COMPROBAR EL ELSE, AQUI LO QUE PASA ES QUE SI ME FIJO EN LA VALORACIÓN DE OTRO USUARIO AL ITEM QUE QUIERO PREDECIR Y ESTA VALORACION ES NULA, PUES QUE HAGA ALGO
-          //if (matriz[similitudes[vecino][0]][item] !== "-") {
             numerador = numerador + (similitudes[k][1]*parseInt(matriz[similitudes[k][0]][item]))
             denominador = denominador + Math.abs(similitudes[k][1],matriz[similitudes[3][0]][item])
-          /*} else {
-            vecino++
-          }
-          vecino++;*/
         }
-        console.log(numerador, denominador, "HOLA", similitudes[3][1], )
         let resultado = numerador/denominador;
 
         return resultado;
@@ -43,50 +58,31 @@ fichero.addEventListener('change', function(e) {
 
 
 
-  function medida(matriz, u, item, n_vecinos,  similitudes) {
+  function dif_media(matriz, medias, u, item, n_vecinos,  similitudes) {
     let numerador = 0;
     let denominador = 0;
-
+    console.log(medias);
     let vec_aux = matriz[u].filter(function(x) {
       return x !== "-";
     })
-
-    let sumatorio_u = 0;
-    for (let k = 0; k < vec_aux.length; k++) {
-      sumatorio_u = sumatorio_u + parseInt(vec_aux[k])
-    }
-
-    let media_u = sumatorio_u/vec_aux.length
 
     for (let k = 0; k < n_vecinos; k++) {
       let vec_aux2 = matriz[similitudes[k][0]].filter(function(x) {
         return x !== "-";
       })
 
-      let sumatorio_v = 0
-
-      for (let l = 0; l < vec_aux2.length; l++) {
-        sumatorio_v = sumatorio_v + parseInt(vec_aux2[l])
-      }
-
-      let media_v = sumatorio_v/vec_aux2.length
-
-      // console.log(similitudes[k][0], matriz[similitudes[k][0]][item])
-        // FALTA COMPROBAR EL ELSE, AQUI LO QUE PASA ES QUE SI ME FIJO EN LA VALORACIÓN DE OTRO USUARIO AL ITEM QUE QUIERO PREDECIR Y ESTA VALORACION ES NULA, PUES QUE HAGA ALGO
-      // if (matriz[similitudes[k][0]][item] !== "-") {
-        numerador = numerador + (similitudes[k][1] * (parseInt(matriz[similitudes[k][0]][item]) - media_v))
-        denominador = denominador + Math.abs(similitudes[k][1])
-      // }
+      numerador = numerador + (similitudes[k][1] * (parseInt(matriz[similitudes[k][0]][item]) - medias[similitudes[k][0]]))
+      denominador = denominador + Math.abs(similitudes[k][1])
     }
 
-    let resultado = media_u + numerador/denominador
+    let resultado = medias[u] + numerador/denominador
 
     return resultado;
   }
 
 
 
-  function pearson(matriz, vecino1, vecino2) {
+  function pearson(matriz, medias, vecino1, vecino2) {
     let vec_aux = []
 
     for (let i = 0; i < matriz[vecino1].length; i++) {
@@ -95,27 +91,14 @@ fichero.addEventListener('change', function(e) {
       }
     }
 
-    let media_v1 = 0
-    let media_v2 = 0
-
-    let sumatorio_v1 = 0
-    let sumatorio_v2 = 0
-    for (let i = 0; i < vec_aux.length; i++) {
-      sumatorio_v1 = sumatorio_v1 + parseInt(matriz[vecino1][vec_aux[i]])
-      sumatorio_v2 = sumatorio_v2 + parseInt(matriz[vecino2][vec_aux[i]])
-    }
-
-    media_v1 = sumatorio_v1/vec_aux.length
-    media_v2 = sumatorio_v2/vec_aux.length
-
     let numerador = 0
     let den_1 = 0
     let den_2 = 0
     for (let i = 0; i < vec_aux.length; i++) {
-      numerador = numerador + ((parseInt(matriz[vecino1][vec_aux[i]])-media_v1)*(parseInt(matriz[vecino2][vec_aux[i]])-media_v2))
+      numerador = numerador + ((parseInt(matriz[vecino1][vec_aux[i]])-medias[vecino1])*(parseInt(matriz[vecino2][vec_aux[i]])-medias[vecino2]))
 
-      den_1 = den_1 + Math.pow(parseInt(matriz[vecino1][vec_aux[i]])-media_v1,2)
-      den_2 = den_2 + Math.pow(parseInt(matriz[vecino2][vec_aux[i]])-media_v2,2)
+      den_1 = den_1 + Math.pow(parseInt(matriz[vecino1][vec_aux[i]])-medias[vecino1],2)
+      den_2 = den_2 + Math.pow(parseInt(matriz[vecino2][vec_aux[i]])-medias[vecino2],2)
     }
 
     den_1 = Math.sqrt(den_1)
@@ -159,7 +142,6 @@ fichero.addEventListener('change', function(e) {
 
 
 
-  // HAY ALGO MAL CUANDO SE HACE DUSTANCIA EUCLIDEA PREDICCION SIMPLE 5 VECINOS
   function euclidea(matriz, vecino1, vecino2) {
     let vec_aux = []
     for (let i = 0; i < matriz[vecino1].length; i++) {
@@ -178,22 +160,7 @@ fichero.addEventListener('change', function(e) {
 
     return resultado
   }
-
-
-
-  function completarrrrrrr_matriz(matriz, metrica, n_vecinos, tipo_pred) {
-    let hola = [[1, 2], [1, 3], [4, 5]]
-    let i = JSON.parse(JSON.stringify(hola));
-
-    console.log(JSON.parse(JSON.stringify(matriz)))
-
-    
-    i[0][1] = 75
-    
-    console.log(hola) // [1,2,3]
-    console.log(i) // [4,2,3]
-  }
-
+  
 
   
   function completar_matriz(matriz, metrica, n_vecinos, tipo_pred) {
@@ -201,9 +168,10 @@ fichero.addEventListener('change', function(e) {
     let similiaridades = [];
     let vecinos_seleccionados = [];
     let calculo_predicciones = [];
+    let medias_usuarios = calculo_medias(matriz);
 
-    for (let i = 0; i < matriz_salida.length; i++) {
-      for (let j = 0; j < matriz_salida.length; j++) {
+    for (let i = 0; i < matriz.length; i++) {
+      for (let j = 0; j < matriz.length; j++) {
         if (i !== j) {
           let indice = 0;
           switch (metrica) {
@@ -215,9 +183,9 @@ fichero.addEventListener('change', function(e) {
               })
 
               if (indice === -1) {
-                similiaridades.push([i, [[j, pearson(matriz_salida, i, j)]]]);
+                similiaridades.push([i, [[j, pearson(matriz, medias_usuarios, i, j)]]]);
               } else {
-                similiaridades[indice][1].push([j, pearson(matriz_salida, i, j)])
+                similiaridades[indice][1].push([j, pearson(matriz, medias_usuarios, i, j)])
               }
               
               break
@@ -229,9 +197,9 @@ fichero.addEventListener('change', function(e) {
               })
 
               if (indice === -1) {
-                similiaridades.push([i, [[j, coseno(matriz_salida, i, j)]]]);
+                similiaridades.push([i, [[j, coseno(matriz, i, j)]]]);
               } else {
-                similiaridades[indice][1].push([j, coseno(matriz_salida, i, j)])
+                similiaridades[indice][1].push([j, coseno(matriz, i, j)])
               }
               break
             case "Distancia Euclídea":
@@ -242,9 +210,9 @@ fichero.addEventListener('change', function(e) {
               })
 
               if (indice === -1) {
-                similiaridades.push([i, [[j, euclidea(matriz_salida, i, j)]]]);
+                similiaridades.push([i, [[j, euclidea(matriz, i, j)]]]);
               } else {
-                similiaridades[indice][1].push([j, euclidea(matriz_salida, i, j)])
+                similiaridades[indice][1].push([j, euclidea(matriz, i, j)])
               }
               break
             case "default":
@@ -257,12 +225,9 @@ fichero.addEventListener('change', function(e) {
     }
 
 
-
-    //completarrrrrrr_matriz(matriz, metrica, n_vecinos, tipo_pred)
-
-    for (let i = 0; i < matriz_salida.length; i++) {
-      for (let j = 0; j < matriz_salida[i].length; j++) {
-        if (matriz_salida[i][j] == "-") {
+    for (let i = 0; i < matriz.length; i++) {
+      for (let j = 0; j < matriz[i].length; j++) {
+        if (matriz[i][j] == "-") {
 
           let indice = similiaridades.findIndex((elemento) => {
             if (elemento[0] === i) {
@@ -275,24 +240,25 @@ fichero.addEventListener('change', function(e) {
           switch (metrica) {
             case "Correlación de Pearson":
               simil_vecinos.sort(function (a, b) {
-                if (a[2] > b[2]) {
+                if (a[1] > b[1]) {
                   return -1;
                 } else {
-                    if (a[2] < b[2]) {
+                    if (a[1] < b[1]) {
                       return 1;
                     } else {
                         return 0;
                       }
                   }
               });
+              console.log(simil_vecinos);
             break
             case "Distancia coseno":
-              for (let k = 1; k < matriz_salida.length; k++) {
+              for (let k = 1; k < matriz.length; k++) {
                 simil_vecinos.sort(function (a, b) {
-                  if (a[2] > b[2]) {
+                  if (a[1] > b[1]) {
                     return -1;
                   } else {
-                      if (a[2] < b[2]) {
+                      if (a[1] < b[1]) {
                         return 1;
                       } else {
                           return 0;
@@ -303,10 +269,10 @@ fichero.addEventListener('change', function(e) {
               break
             case "Distancia Euclídea":
               simil_vecinos.sort(function (a, b) {
-                if (a[2] < b[2]) {
+                if (a[1] < b[1]) {
                   return -1;
                 } else {
-                    if (a[2] > b[2]) {
+                    if (a[1] > b[1]) {
                       return 1;
                     } else {
                         return 0;
@@ -320,33 +286,34 @@ fichero.addEventListener('change', function(e) {
               break
           }
 
-
+          console.log(simil_vecinos)
           let aux = [i, j, []]
           let prediccion = 0
           switch (tipo_pred) {
             case "Predicción simple":
               for (let k = 0; k < n_vecinos; k++) {
                 // Con este if me aseguro de que cuando se vaya a hacer la predicción no comprobemos un vecino que tampoco haya valorado ese item, se pasaria al siguiente vecino más cercano
-                if (matriz_salida[simil_vecinos[k][0]][j] == "-") {
+                if (matriz[simil_vecinos[k][0]][j] == "-") {
                   simil_vecinos.splice(k, 1);
                   k--;
+                  console.log("aaaa")
+                  console.log(simil_vecinos);
                   continue;
-
+                  
                 }
 
                 aux[2].push(simil_vecinos[k][0]);
               }
               
-              prediccion = simple(matriz_salida, j, n_vecinos, simil_vecinos)
-
+              prediccion = simple(matriz, j, n_vecinos, simil_vecinos)
               calculo_predicciones.push([i, j, prediccion])
               matriz_salida[i][j] = parseInt(prediccion).toFixed();
     
               break
 
-            case "Diferencia con la medida":
+            case "Diferencia con la media":
               for (let k = 0; k < n_vecinos; k++) {
-                if (matriz_salida[simil_vecinos[k][0]][j] == "-") {
+                if (matriz[simil_vecinos[k][0]][j] == "-") {
                   simil_vecinos.splice(k, 1);
                   k--;
                   continue;
@@ -354,7 +321,7 @@ fichero.addEventListener('change', function(e) {
                 aux[2].push(simil_vecinos[k][0]);
               }
 
-              prediccion = medida(matriz_salida, i, j, n_vecinos, simil_vecinos)
+              prediccion = dif_media(matriz, medias_usuarios, i, j, n_vecinos, simil_vecinos)
               calculo_predicciones.push([i, j, prediccion])
               matriz_salida[i][j] = parseInt(prediccion).toFixed();
               break
@@ -387,9 +354,17 @@ fichero.addEventListener('change', function(e) {
         for (let i = 0; i < salida_syr[0].length; i++) {
           for (let j = 0; j < salida_syr[0][i].length; j++) {
             if (j > 0) {
-              salida = salida + " " + salida_syr[0][i][j]
+              if (matriz_entrada[i][j] === "-") {
+                salida = salida + " " + "<b>" + salida_syr[0][i][j] + "</b>"
+              } else {
+                salida = salida + " " + salida_syr[0][i][j]
+              }
             } else {
-              salida = salida + salida_syr[0][i][j];
+              if (matriz_entrada[i][j] === "-") {
+                salida = salida + "<b>" + salida_syr[0][i][j] + "</b>"
+              } else {
+                salida = salida + salida_syr[0][i][j]
+              }
             }
           }
           salida = salida + "<br>"
@@ -426,7 +401,7 @@ fichero.addEventListener('change', function(e) {
         salida = salida + "<br><br><b>Cálculo de cada predicción de la matriz de utilidad en base a los vecinos seleccionados</b><br>"
         console.log(salida_syr[2])
         for (let i = 0; i < salida_syr[3].length; i++) {
-          salida = salida + "· Predicción de la calificación Usuario " + (parseInt(salida_syr[3][i][0])+1) + "- Item " + (parseInt(salida_syr[3][i][1])+1) + ": <b>" + salida_syr[3][i][2] + "<br>"
+          salida = salida + "· Predicción de la calificación Usuario " + (parseInt(salida_syr[3][i][0])+1) + "- Item " + (parseInt(salida_syr[3][i][1])+1) + ": <b>" + salida_syr[3][i][2] + "</b><br>"
         }
 
         salida = salida + "<br><br>"
