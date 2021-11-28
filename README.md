@@ -28,7 +28,6 @@ A parte de estas funciones en el fichero de Javascript también hay un manejador
 ### Ejemplo de uso
 
 Parametros de entrada:
-  
   * Fichero: Seleccionar un fichero que contenga la siguiente matriz (Nos tenemos que asegurar que esta solo contenga espacios entre medio de los números, y no espacios ni al final ni al principio de cada fila):  
     5 3 4 4 -  
     3 1 2 3 3  
