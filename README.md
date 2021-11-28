@@ -1,7 +1,7 @@
 # Sistemas de recomendación
 ## ACOIDAN MESA HERNANDEZ - [alu0101206479@ull.edu.es](alu0101206479@ull.edu.es)
 
-### Explicación del código
+### Descripción del código desarrollado
 
 Se ha desarrollado un código en ```HTML``` y ```Javascript```, este código consta de un fichero HTML con un formulario con 4 inputs:
 
