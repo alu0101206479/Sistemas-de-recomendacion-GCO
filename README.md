@@ -76,7 +76,7 @@ Salida:
 
 **Vecinos seleccionados en el proceso de predicción**  
   * Predicción de la calificación Usuario 1 - Item 5:
-  Usuarios **2**, **3** y **4**
+  Usuarios **2** y **3**
 
 **Cálculo de cada predicción de la matriz de utilidad en base a los vecinos seleccionados**
-  * Predicción de la calificación Usuario 1 - Item 5: **3.841379310344828**
+  * Predicción de la calificación Usuario 1 - Item 5: **4.88**

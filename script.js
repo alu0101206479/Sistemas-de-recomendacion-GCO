@@ -45,14 +45,14 @@ function simple(matriz, item, num_vecinos, similitudes) {
     alert("ERROR: EL número elegido de vecinos es demasiado pequeño para obtener predicciones con 'Predicción simple', no pueden seleccinarse menos de 3 vecinos");
     throw new Error();
   } else {
-
+      
       let numerador = 0;
       let denominador = 0;    
 
       // Calculo de formula
       for (let k = 0; k < num_vecinos; k++) {
           numerador = numerador + (similitudes[k][1]*parseInt(matriz[similitudes[k][0]][item]))
-          denominador = denominador + Math.abs(similitudes[k][1],matriz[similitudes[3][0]][item])
+          denominador = denominador + Math.abs(similitudes[k][1])
       }
       let resultado = numerador/denominador;
 
@@ -105,6 +105,10 @@ function correlacion_pearson(matriz, medias, usuario1, usuario2) {
   den_2 = Math.sqrt(den_2)
   let denominador = den_1*den_2
 
+  if (numerador === 0 && denominador === 0) {
+    alert ("Las calificaciones NaN, se podrucen porque en la correlación de Pearson se estan dando indeterminaciones 0/0")
+  }
+
   let resultado = parseFloat((numerador/denominador).toFixed(2))
 
   return resultado
@@ -139,6 +143,10 @@ function coseno(matriz, usuario1, usuario2) {
   den_2 = Math.sqrt(den_2)
   let denominador = den_1*den_2
 
+  if (numerador === 0 && denominador === 0) {
+    alert ("Las calificaciones NaN, se podrucen porque en la distancia coseno se estan dando indeterminaciones 0/0")
+  }
+
   let resultado = parseFloat((numerador/denominador).toFixed(2))
 
   return resultado
@@ -170,7 +178,7 @@ function euclidea(matriz, usuario1, usuario2) {
 
 
 // Función principal del programa, esta función es la que llama a todas las demás y la que se encarga de completar la matriz de predicciones, calcular todas las similitudes, todas las predicciones...
-function sistema_recomendacion(matriz, metrica, num_vecinos, tipo_pred) {
+function sistema_recomendacion(matriz, metrica, num_vecinos, tipo_prediccion) {
   let matriz_salida = JSON.parse(JSON.stringify(matriz)); // Matriz que se va a completar, copia de la matriz original
   let similiaridades = [];  // Similiaridades entre todos los pares de usuarios en un Vector de vectores con formato [[Pos. usuario u, [Pos. usuario v, Similitud entre ellos]..]...]
   let vecinos_seleccionados = []; // Vector que contendrá los vecinos seleccionados en cada predicción en vectores con formato [Pos. usuario, Pos. item, [Pos. vecino X, Pos. Vecino Y..]..]
@@ -260,6 +268,11 @@ function sistema_recomendacion(matriz, metrica, num_vecinos, tipo_pred) {
                     }
                 }
             });
+
+            // Normalizamos las similitudes al rango [0..1]
+            for (let k = 0; k < simil_vecinos.length; k++) {
+              simil_vecinos[k][1] = (simil_vecinos[k][1]-(-1))/(1-(-1))
+            }
             break
           case "Distancia coseno":
             for (let k = 1; k < matriz.length; k++) {
@@ -288,6 +301,11 @@ function sistema_recomendacion(matriz, metrica, num_vecinos, tipo_pred) {
                     }
                 }
             });
+
+            // Normalizamos las similitudes al rango [0..1]
+            for (let k = 0; k < simil_vecinos.length; k++) {
+              simil_vecinos[k][1] = (simil_vecinos[k][1]-0)/(Math.sqrt(25*matriz[i].length-0))
+            }
             break
           case "default":
             alert("Ha habido un error en la elección de la métrica")
@@ -298,7 +316,7 @@ function sistema_recomendacion(matriz, metrica, num_vecinos, tipo_pred) {
 
         let aux = [i, j, []] // Vector auxiliar para almacenar los vecinos seleccionados en el calculo de la predicción del usuario i con el item j
         let prediccion = 0
-        switch (tipo_pred) {
+        switch (tipo_prediccion) {
           case "Predicción simple":
             // For para pushear los vecinos que vamos a utilizar en el vector
             for (let k = 0; k < num_vecinos; k++) {
@@ -312,7 +330,7 @@ function sistema_recomendacion(matriz, metrica, num_vecinos, tipo_pred) {
 
               aux[2].push(simil_vecinos[k][0]);
             }
-            
+
             prediccion = simple(matriz, j, num_vecinos, simil_vecinos) // Calculo de predicción
             calculo_predicciones.push([i, j, prediccion]) // Introducimos el calculo en el vector en formato [usuario, item, valorPrediccion]
             matriz_salida[i][j] = Math.round(prediccion).toString(); // Cambiamos el guión por la calificación predecida por ese item en la matriz de utilidad a completar
