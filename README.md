@@ -14,7 +14,7 @@ Este formulario consta de un botón que cuando se pulsa llama a una función del
 
 El fichero de Javascript consta de las siguientes funciones:
 
-  * js```tratar_datos()```: Función a la que se llama desde el html, recoge los datos y muestra las salidas correspondientes
+  * ```javascript tratar_datos()```: Función a la que se llama desde el html, recoge los datos y muestra las salidas correspondientes
   * javascript```completar_matriz(matriz, metrica, num_vecinos, tipo_pred)```: Función principal del programa, esta función es la que llama a todas las demás y la que se encarga de completar la matriz de predicciones, calcular todas las similitudes, todas las predicciones...
   * javascript```calculo_medias(matriz, i)```: Función que calcula las medias de las calificaciones de los items de todos los usuarios de la matriz y las retorna en forma de vector
   * javascript```coeficiente_pearson(matriz, medias, usuario1, usuario2)```: Función que calcula las similitud entre dos usuarios a través del "Coeficiente de Pearson"
